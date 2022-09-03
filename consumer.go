@@ -11,10 +11,10 @@ import (
 
 // Sarama configuration options
 var (
-	brokers  = "127.0.0.1:29092,127.0.0.1:29093"
-	version  = "2.1.1"
-	group    = "example"
-	topics   = "sarama"
+	brokers = "127.0.0.1:29092,127.0.0.1:39092"
+	version = "2.1.0"
+	// group    = "sample"
+	topics   = "sample"
 	assignor = "range"
 	oldest   = true
 	verbose  = false
@@ -50,7 +50,7 @@ func RunConsumer() {
 	}
 
 	if oldest {
-		config.Consumer.Offsets.Initial = sarama.OffsetOldest
+		config.Consumer.Offsets.Initial = sarama.OffsetNewest
 	}
 
 	/**
@@ -66,6 +66,12 @@ func RunConsumer() {
 	if err != nil {
 		log.Panicf("Error creating consumer group client: %v", err)
 	}
+
+	// id, err := client.Topics()
+	// if err != nil {
+	// 	log.Panicf("Error creating consumer group client: %v", err)
+	// }
+	// fmt.Println(id)
 
 	// go func() {
 	// 	for {
@@ -84,7 +90,7 @@ func RunConsumer() {
 	// }()
 
 	// How to decide partition, is it fixed value...?
-	consumer, err := client.ConsumePartition(topics, 0, sarama.OffsetOldest)
+	consumer, err := client.ConsumePartition(topics, 2, sarama.OffsetOldest)
 	if err != nil {
 		panic(err)
 	}
@@ -95,6 +101,8 @@ func RunConsumer() {
 		case err := <-consumer.Errors():
 			fmt.Println(err)
 		case msg := <-consumer.Messages():
+			fmt.Println(msg.Partition)
+			fmt.Println(topics)
 			fmt.Println("Received messages", string(msg.Key), string(msg.Value))
 		}
 	}
@@ -142,3 +150,5 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		}
 	}
 }
+
+// https://github.com/tcnksm-sample/sarama/blob/master/http-log-producer/main.go
