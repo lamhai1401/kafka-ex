@@ -20,7 +20,7 @@ func RunProducer() { // simple sarama producer that adds a new producer intercep
 	// The level of acknowledgement reliability needed from the broker.
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	brokers := []string{"127.0.0.1:29092", "127.0.0.1:39092"}
-	producer, err := sarama.NewAsyncProducer(brokers, config)
+	producer, err := sarama.NewSyncProducer(brokers, config)
 	if err != nil {
 		// Should not reach here
 		panic(err)
@@ -42,24 +42,26 @@ func RunProducer() { // simple sarama producer that adds a new producer intercep
 
 	for {
 
-		select {
-		case producer.Input() <- getMsg():
-			fmt.Println("Produce message")
-		case err := <-producer.Errors():
-			fmt.Println("Failed to produce message:", err)
-		}
-		time.Sleep(1 * time.Second)
+		// select {
+		// case producer.Input() <- getMsg():
+		// 	fmt.Println("Produce message")
+		// case err := <-producer.Errors():
+		// 	fmt.Println("Failed to produce message:", err)
+		// }
+
+		producer.SendMessage(getMsg())
+		time.Sleep(100 * time.Millisecond)
 	}
 
 }
 
 func getMsg() *sarama.ProducerMessage {
 	return &sarama.ProducerMessage{
-		Topic:     topics,
-		Key:       sarama.StringEncoder(fmt.Sprintf("key %v", time.Now().UnixMilli())),
-		Value:     sarama.StringEncoder(fmt.Sprintf("value %v", time.Now().UnixMilli())),
-		Timestamp: time.Now(),
-		Offset:    1,
-		Partition: 2,
+		Topic: topics,
+		Key:   sarama.StringEncoder(fmt.Sprintf("key %v", time.Now().UnixMilli())),
+		Value: sarama.StringEncoder(fmt.Sprintf("value %v", time.Now().UnixMilli())),
+		// Timestamp: time.Now(),
+		// Offset:    1,
+		// Partition: 4,
 	}
 }

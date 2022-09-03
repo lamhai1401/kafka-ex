@@ -90,7 +90,7 @@ func RunConsumer() {
 	// }()
 
 	// How to decide partition, is it fixed value...?
-	consumer, err := client.ConsumePartition(topics, 2, sarama.OffsetOldest)
+	consumer, err := client.ConsumePartition(topics, 1, sarama.OffsetNewest)
 	if err != nil {
 		panic(err)
 	}
@@ -101,8 +101,7 @@ func RunConsumer() {
 		case err := <-consumer.Errors():
 			fmt.Println(err)
 		case msg := <-consumer.Messages():
-			fmt.Println(msg.Partition)
-			fmt.Println(topics)
+			fmt.Println(msg.Offset, msg.Partition)
 			fmt.Println("Received messages", string(msg.Key), string(msg.Value))
 		}
 	}
